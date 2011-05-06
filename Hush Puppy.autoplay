@@ -2,24 +2,24 @@
 <ProductVersion>8.0.4.0</ProductVersion>
 <ProductID>{ABF9EF9E-ECF6-4019-8A3E-908A6CFF4D1A}</ProductID>
 <IRProductName>AutoPlay Media Studio 8</IRProductName>
-<ProductType>Commercial</ProductType>
+<ProductType></ProductType>
 <DocInfo>
 <Title/>
 <Author/>
 <Company/>
-<Copyright>Copyright © 2011</Copyright>
+<Copyright></Copyright>
 <URL/>
 <Email/>
 <Comments/>
-<CreatedVersion>8.0.4.0 (Professional Edition Commercial)</CreatedVersion>
-<LastSavedVersion>8.0.4.0 (Professional Edition Commercial)</LastSavedVersion>
+<CreatedVersion></CreatedVersion>
+<LastSavedVersion></LastSavedVersion>
 </DocInfo>
 <ProjectInfo ToolTipStyle="0">
 <Office2007Theme Theme="5"/>
 <WindowStyles>
 <Width>630</Width>
 <Height>250</Height>
-<WindowTitle>Hush Puppy Version 0.1 Build 6</WindowTitle>
+<WindowTitle>Hush Puppy Version 0.2 Build 6</WindowTitle>
 <WindowStyle>2</WindowStyle>
 <FillColor>0</FillColor>
 </WindowStyles>
