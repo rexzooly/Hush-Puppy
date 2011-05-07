@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?><DocumentData>
-<ProductVersion></ProductVersion>
+<ProductVersion>8.0.5.0</ProductVersion>
 <ProductID>{ABF9EF9E-ECF6-4019-8A3E-908A6CFF4D1A}</ProductID>
 <IRProductName>AutoPlay Media Studio 8</IRProductName>
-<ProductType></ProductType>
+<ProductType>Commercial</ProductType>
 <DocInfo>
 <Title/>
 <Author/>
@@ -12,7 +12,7 @@
 <Email/>
 <Comments/>
 <CreatedVersion/>
-<LastSavedVersion></LastSavedVersion>
+<LastSavedVersion>8.0.5.0 (Professional Edition Commercial)</LastSavedVersion>
 </DocInfo>
 <ProjectInfo ToolTipStyle="0">
 <Office2007Theme Theme="5"/>
@@ -234,7 +234,52 @@ function ListIconEvent.OnChecked(ObjectName, Row, boolChecked)
 end
 
 function ListIconEvent.OnRightClick(ObjectName, Row)
-
+	if (Row and Row ~= -1) then
+		local Position, Menu = System.GetMousePosition(false), {};
+		Menu[1] = {Text = "Remove entry..", ID = 1};
+		Menu[2] = {Text = "---"};
+		Menu[3] = {Text = "Copy username to Clipboard..", ID = 2};
+		Menu[4] = {Text = "Copy password to Clipboard..", ID = 3};
+		
+		local nRes = Application.ShowPopupMenu(Position.X, Position.Y, Menu, 0, 0, true, false);
+		
+		if (nRes ~= -1) then
+			if (nRes == 1) then
+				local ToDelete = {}; 
+				ToDelete.ID = ListIcon.GetCellText(ObjectName, Row, 3);
+				ToDelete.Services = ListIcon.GetCellText(ObjectName, Row, 0);
+				ToDelete.Username = ListIcon.GetCellText(ObjectName, Row, 1);
+			
+				local MessageDelete =[[Are you sure you want to delete the following?
+	Username: ]]..ToDelete.Username..[[,
+	Service: ]]..ToDelete.Services..[[,
+	#(]]..ToDelete.ID..[[)]];
+		
+				local DeleteMe = Dialog.Message("Delete", MessageDelete, MB_OKCANCEL, MB_ICONNONE, MB_DEFBUTTON2);
+			
+				if DeleteMe == IDOK then
+					HP:DropServices(tonumber(ToDelete.ID));
+					HP:PullServices();
+				end
+			elseif (nRes == 2) then
+				Clipboard.CopyText(ListIcon.GetCellText(ObjectName, Row, 1));
+				
+				if (Application.GetLastError() ~= 0) then
+					return Dialog.Message("Error", "Failed to copy username to Clipboard.\r\n\r\n".._tblErrorMessages[Application.GetLastError()], 0, 16, 0);
+				else
+					return Dialog.Message("Success", "Successfully copied username to Clipboard!", 0, 64, 0);
+				end
+			elseif (nRes == 3) then
+				Clipboard.CopyText(ListIcon.GetCellText(ObjectName, Row, 2));
+				
+				if (Application.GetLastError() ~= 0) then
+					return Dialog.Message("Error", "Failed to copy password to Clipboard.\r\n\r\n".._tblErrorMessages[Application.GetLastError()], 0, 16, 0);
+				else
+					return Dialog.Message("Success", "Successfully copied password to Clipboard!", 0, 64, 0);
+				end
+			end
+		end
+	end
 end
 
 function ListIconEvent.OnSelect(ObjectName, Row)
@@ -346,8 +391,8 @@ else
 end</Script>
 <BookMarks count="0">
 </BookMarks>
-<DesignCodeLine>148</DesignCodeLine>
-<DesignCodeCol>1</DesignCodeCol>
+<DesignCodeLine>204</DesignCodeLine>
+<DesignCodeCol>67</DesignCodeCol>
 </Globals>
 <Defaults>
 <StartupPage>_PageFirst</StartupPage>
@@ -364,6 +409,7 @@ end</Script>
 <CurrentGrounp>0</CurrentGrounp>
 </Group>
 <ActionPlugins>
+<Plugin>Clipboard\Clipboard.lmd</Plugin>
 <Plugin>ListIcon\ListIcon.lmd</Plugin>
 </ActionPlugins>
 <TemplateInfo>
