@@ -1,26 +1,38 @@
 <?xml version="1.0" encoding="iso-8859-1"?><DocumentData>
-<ProductVersion>8.0.5.0</ProductVersion>
+<ProductVersion>8.2.0.0</ProductVersion>
 <ProductID>{ABF9EF9E-ECF6-4019-8A3E-908A6CFF4D1A}</ProductID>
 <IRProductName>AutoPlay Media Studio 8</IRProductName>
 <ProductType>Commercial</ProductType>
 <DocInfo>
-<Title/>
-<Author/>
+<Title>Hush Puppy Framework</Title>
+<Author>Rexzooly Kai Black</Author>
 <Company/>
 <Copyright/>
-<URL/>
+<URL>https://github.com/rexzooly</URL>
 <Email/>
-<Comments/>
+<Comments>This framework uses ListIcon 2.2.0.0, this framework is here for you to learn SQLite3 and ListIcon very basics, it is a start for many different database driven programs.
+
+Big thanks to Shadiku.com for there help on how to use ListIcon.
+
+I would advice people to build the source use it and slowly learn what each section of the program does, learn AMS's basic functions before trying to understand this software.
+
+ListIcon Action Plugin(
+    Created by Imagine Programming
+    http://www.imagine-programming.com/
+    Copyright © 2010 Imagine Programming (And LuaDevils)
+)
+
+Enjoy, remeber to credit people for there work.</Comments>
 <CreatedVersion/>
-<LastSavedVersion>8.0.5.0 (Professional Edition Commercial)</LastSavedVersion>
+<LastSavedVersion>8.2.0.0 (Professional Edition Commercial)</LastSavedVersion>
 </DocInfo>
-<ProjectInfo ToolTipStyle="0">
+<ProjectInfo ToolTipStyle="2">
 <Office2007Theme Theme="5"/>
 <WindowStyles>
 <Width>630</Width>
 <Height>250</Height>
-<WindowTitle>Hush Puppy Version 0.2 Build 6</WindowTitle>
-<WindowStyle>2</WindowStyle>
+<WindowTitle>Hush Puppy Version 0.3</WindowTitle>
+<WindowStyle>0</WindowStyle>
 <FillColor>0</FillColor>
 </WindowStyles>
 <WindowOptions>
@@ -36,8 +48,8 @@
 </TransparentWindow>
 <Icon>
 <UseCustomIcon>1</UseCustomIcon>
-<TaskbarVisibility>0</TaskbarVisibility>
-<IconFile>AutoPlay\Icons\HushPuppyIcon.ico</IconFile>
+<TaskbarVisibility>1</TaskbarVisibility>
+<IconFile>AutoPlay\Icons\1385269262_20762.ico</IconFile>
 </Icon>
 <IntroVideo>
 <AllowClickToSkip>1</AllowClickToSkip>
@@ -63,79 +75,210 @@
 <Tracks/>
 </AudioBGMusic>
 <Globals>
-<Script>HP = {};
+<Script>--[[
+	Welcome to Hush Puppy Framework 0.3
+	Author Rexzooly Kai Black
+	
+	This Framework users ListIcon 2.2.0.0
+	this plugin is by Imagine Programming (IP) imagine-programming.com
+	and help with using this plugin came from Shadiku http://shadiku.com/
+	
+	This software was updated in AutoPlay Media Studios 8.2 and requires a min of 8
+	to be able to edit and complie this source.
+	
+	Using this source you are agreeing that you are using it at your own risk, and you
+	are also agreeing to any 3ed party licence's including plugins and the 
+	AutoPlay Media Studios IDE own licence's.
+	
+	Please use this source to learn, if you do just take it and rebrand it please give
+	full credit to myself and all other users like I have already.
+]]--
 
-HP.Root = Shell.GetFolder(SHF_MYDOCUMENTS).."\\puppy.sys";
 
+HP = {
+		-- Edit this below to what ever you would like the title to be EG: Title = 'My Software 01';
+		Title = 'Hush Puppy (0.3) By Rexzooly Kai Black', 
+		-- This is the name of the database file you can name this anything EG: db.msc
+		DatabaseName = 'core.sys'
+	};
+
+
+-- Since we have already set this in the main setup section we don't need to edit this path.
+-- WARNING EDIT ONLY IF YOU KNOW WHAT YOUR DOING
+HP.Root = Shell.GetFolder(SHF_MYDOCUMENTS).."\\"..HP.DatabaseName;
+
+
+
+-- These two functions are needed to ecode and decode the details within the database but you can create your own if you like, this was made just for basic encoding
+-- #1
 function HP:Encode(s_string)
 	HPTool = System.GetLANInfo();
-	LockedString = Crypto.BlowfishEncryptString(s_string, HPTool.Host, 0);
+	LockedString = Crypto.BlowfishEncryptString(s_string, HPTool.Host..HPTool.User, 0);
 	code = string.reverse(LockedString);
 	return enc(code);
 end
-
+--#2
 function HP:Decode(s_string)
 	HPTool = System.GetLANInfo();
 	code = dec(s_string);
 	LockedString = string.reverse(code);
-	CleanString = Crypto.BlowfishDecryptString(LockedString, HPTool.Host);
+	CleanString = Crypto.BlowfishDecryptString(LockedString, HPTool.Host..HPTool.User);
 	return CleanString;
 end
 
-function HP:Create()
+
+
+-- This function creats the database, requests the user password and sets up the app to be read to work, 
+-- WARNING EDIT ONLY IF YOU KNOW WHAT YOUR DOING
+function HP:Create(b_locked)
+	Window.SetText(Application.GetWndHandle(), HP.Title);
+	if b_locked == nil or b_locked == '' then
+		b_locked = true;
+	else
+		if type(b_locked) == 'boolean' then
+			b_locked = b_locked;
+		else
+			if type(b_locked) == 'string' then
+				if b_locked == 'true' then
+					b_locked = true;
+				end
+				if b_locked == 'false' then
+					b_locked = false;
+				end
+				if b_locked ~= 'false' and b_locked ~= 'true' then
+					b_locked = true;
+				end
+			else
+				b_locked = true;
+			end
+		end
+	end
 	if not File.DoesExist(HP.Root) then
 		TextFile.WriteFromString(HP.Root, "", false);
-		SQLite3Connection, err = SQLite3:connect(HP.Root);
-		if SQLite3Connection then
-			SQLite3Connection:execute("CREATE TABLE bank (sid INTEGER PRIMARY KEY, icon INTEGER, sname VARCHAR(300), email VARCHAR(300), auth VARCHAR(300))");
+		SQLite3CreateConnection, err = SQLite3:connect(HP.Root);
+		if SQLite3CreateConnection then
+			returns, err = SQLite3CreateConnection:execute("CREATE TABLE bank (ID INTEGER PRIMARY KEY, icon INTEGER, sname VARCHAR(300), email VARCHAR(300), auth VARCHAR(300))");
+			if err then
+				Dialog.Message(HP.Title, err);
+			end
+			returns, err = SQLite3CreateConnection:execute("CREATE TABLE settings (ID INTEGER PRIMARY KEY, mode VARCHAR(300), auth VARCHAR(300))");
+			if err then
+				Dialog.Message(HP.Title, err);
+			end
+			SQLite3CreateConnection:close();
+			PassMe = Dialog.Message(HP.Title, 'Would you like to enable password mode? This will lock the software with your own password and request it when you open the program.', MB_YESNO, MB_ICONNONE, MB_DEFBUTTON2);
+			if b_locked then
+				if PassMe == IDYES then
+					PinAurth = Dialog.PasswordInput('Please enter your new pin', 'If you leave this blank the app will default your pin to 0000', MB_ICONNONE);
+					if PinAurth == nil or PinAurth == '' then
+						HP:SetUser('1', '0000');
+					else
+						HP:SetUser('1', PinAurth);
+					end
+				else
+					HP:SetUser('0', '0000');
+				end
+			end
 		else
-			Dialog.Message("Hush Puppy Error", err);
+			Dialog.Message(HP.Title.." Error", err);
 		end
-		SQLite3Connection:close();
+	else
+		if b_locked then 
+			HP:PullUser();
+		end
 	end
 end
 
-function HP:DropServices(s_id)
-	SQLite3Connection, err = SQLite3:connect(HP.Root);
+-- This function will drop a given Entry
+function HP:DropEntry(s_id)
+	SQLite3DropConnection, err = SQLite3:connect(HP.Root);
+	if not SQLite3DropConnection and err then
+		Dialog.Message(HP.Title.." Error", err);
+	else
+		returns, err = SQLite3DropConnection:execute(string.format("DELETE FROM bank WHERE ID = '%s'", s_id));				
+		if err then
+			Dialog.Message(HP.Title, err);
+		end
+	end
+	SQLite3DropConnection:close();
+end
+
+function HP:SetUser(Mode, Auth)
+	SQLite3SetUserConnection, err = SQLite3:connect(HP.Root);
+	if not SQLite3SetUserConnection and err then
+		Dialog.Message(HP.Title.." Error", err);
+	else
+		returns, err = SQLite3SetUserConnection:execute(string.format("INSERT INTO settings (mode, auth) VALUES('%s', '%s')", Mode, HP:Encode(Auth)));
+		if err then
+			Dialog.Message(HP.Title, err);
+		end
+	end
+	SQLite3SetUserConnection:close();
+end
+
+function HP:DeleteUser()
+	SQLite3UserConnection, err = SQLite3:connect(HP.Root);
 	if not SQLite3Connection and err then
-	    Dialog.Message("Hush Puppy Error", err);
+		Dialog.Message(HP.Title.." Error", err);
 	else
-		SQLite3Connection:execute(string.format("DELETE FROM bank WHERE sid = "..s_id));
+		returns, err = SQLite3UserConnection:execute(string.format("UPDATE settings SET mode = '%s'", '0'));
+		if err then
+			Dialog.Message(HP.Title, err);
+		end
 	end
+	SQLite3UserConnection:close();
 end
 
-function HP:AddServices(s_icon, s_service, s_email, s_auth)
-	if not File.DoesExist(HP.Root) then
-		SQLite3Connection, err = SQLite3:connect(HP.Root);
-		if not SQLite3Connection and err then
-		    Dialog.Message("Hush Puppy Error", err);
-		else
-			SQLite3Connection:execute(string.format("INSERT INTO bank (sid, icon, sname, email, auth) VALUES(NULL, '%s', '%s', '%s', '%s')", "1", s_service, HP:Encode(s_email), HP:Encode(s_auth)));
-			SQLite3Cursor = SQLite3Connection:execute("SELECT * FROM bank ORDER BY LOWER(sname), sname ASC");
-			row = SQLite3Cursor:fetch({},"a");
-			while row do
-				--ShowService = {ID = string.format("%s", row.sid), Icon = string.format("%s", row.icon), Name = string.format("%s", row.sname), Email = HP:Decode(row.email), Auth = HP:Decode(row.auth)}; 
-		   		--ListIcon.AddRow("ListBox1", ShowService.Name..NEXT_CELL..ShowService.Email..NEXT_CELL..ShowService.Auth..NEXT_CELL..ShowService.ID, ServiceImage[tonumber(ShowService.Icon)]);
-			    row = SQLite3Cursor:fetch(row,"a");
-			end
-			SQLite3Cursor:close();
-			SQLite3Connection:close();
-		end
+function HP:PullUser()
+	SQLite3PullUserConnection, err = SQLite3:connect(HP.Root);
+	if not SQLite3PullUserConnection and err then
+	    Dialog.Message(HP.Title.." Error", err);
 	else
-		SQLite3Connection, err = SQLite3:connect(HP.Root);
-		if not SQLite3Connection and err then
-		    Dialog.Message("Hush Puppy Error", err);
-		else
-			SQLite3Connection:execute(string.format("INSERT INTO bank (sid, icon, sname, email, auth) VALUES(NULL, '%s', '%s', '%s', '%s')", '1', s_service, HP:Encode(s_email), HP:Encode(s_auth)));
-			SQLite3Cursor = SQLite3Connection:execute("SELECT * FROM bank ORDER BY LOWER(sname), sname ASC");
-			row = SQLite3Cursor:fetch({},"a");
-			while row do
-				--ShowService = {ID = string.format("%s", row.sid), Icon = string.format("%s", row.icon), Name = string.format("%s", row.sname), Email = HP:Decode(row.email), Auth = HP:Decode(row.auth)}; 
-		   		--ListIcon.AddRow("ListBox1", ShowService.Name..NEXT_CELL..ShowService.Email..NEXT_CELL..ShowService.Auth..NEXT_CELL..ShowService.ID, ServiceImage[tonumber(ShowService.Icon)]);
-			    row = SQLite3Cursor:fetch(row,"a");
+		SQLite3PullUserCursor, err = SQLite3PullUserConnection:execute("SELECT * FROM settings");
+		if err then
+			Dialog.Message(HP.Title, err);
+		end
+		row = SQLite3PullUserCursor:fetch({}, 'a');
+		while row do
+			if row.mode == '1' then
+				wrong = true
+				CountWrong = 0;
+				Trys = 3;
+				while wrong do
+					thispin = Dialog.PasswordInput('Enter Pin', 'Please enter pin, you have '..Trys..' left', MB_ICONNONE);
+					if HP:Encode(thispin) ~= row.auth then
+						CountWrong = CountWrong+1;
+						Trys = Trys -1;
+						if CountWrong &gt;= 3 then
+							Dialog.Message(HP.Title, 'Wrong Pin, Now Closing');
+							Application.Exit(0);
+						end
+					else
+						wrong = false;
+						break;
+					end
+				end
+				break;
+			else
+				row = SQLite3PullUserCursor:fetch(row,"a");
 			end
-			SQLite3Cursor:close();
-			SQLite3Connection:close();
+		end
+	end
+	SQLite3PullUserCursor:close();
+	SQLite3PullUserConnection:close();
+end
+
+function HP:AddServices(s_service, s_email, s_auth)
+	if not File.DoesExist(HP.Root) then
+		Dialog.Message(HP.Title, '404, Missing Database');
+	else
+		SQLite3AddConnection, err = SQLite3:connect(HP.Root);
+		if not SQLite3AddConnection and err then
+		    Dialog.Message(HP.Title, err);
+		else
+			s_auth = HP:Encode(s_auth);
+			SQLite3AddConnection:execute("INSERT INTO bank (icon, sname, email, auth) VALUES ('1', '"..s_service.."', '"..s_email.."', '"..s_auth.."')");
+			SQLite3AddConnection:close();
 		end
 	end
 end
@@ -146,14 +289,13 @@ function HP:PullServices()
 	ListIcon.SetView("ListBox1", LISTICON_DETAIL);
 	SQLite3Connection, err = SQLite3:connect(HP.Root);
 	if not SQLite3Connection and err then
-	    Dialog.Message("Hush Puppy Error", err);
+	    Dialog.Message(HP.Title.." Error", err);
 	else
 		SQLite3Cursor = SQLite3Connection:execute("SELECT * FROM bank ORDER BY LOWER(sname), sname ASC");
 		row = SQLite3Cursor:fetch({},"a");
 		while row do
-			ShowService = {ID = string.format("%s", row.sid), Icon = string.format("%s", row.icon), Name = string.format("%s", row.sname), Email = HP:Decode(row.email), Auth = HP:Decode(row.auth)}; 
+			ShowService = {ID = string.format("%s", row.ID), Icon = string.format("%s", row.icon), Name = string.format("%s", row.sname), Email = string.format("%s", row.email), Auth = HP:Decode(row.auth)}; 
 	   		ListIcon.AddRow("ListBox1", ShowService.Name..NEXT_CELL..ShowService.Email..NEXT_CELL..ShowService.Auth..NEXT_CELL..ShowService.ID, HP:ServiceIcon(ShowService.Name));
-		    --ListIcon.AddRow("ListBox1", ShowService.Name..NEXT_CELL..ShowService.Email..NEXT_CELL..ShowService.Auth..NEXT_CELL..ShowService.ID, );
 		    row = SQLite3Cursor:fetch(row,"a");
 		end
 		SQLite3Cursor:close();
@@ -234,48 +376,67 @@ function ListIconEvent.OnChecked(ObjectName, Row, boolChecked)
 end
 
 function ListIconEvent.OnRightClick(ObjectName, Row)
-	if (Row and Row ~= -1) then
+	if HPMode == 'Add' then
 		local Position, Menu = System.GetMousePosition(false), {};
-		Menu[1] = {Text = "Remove entry..", ID = 1};
-		Menu[2] = {Text = "---"};
-		Menu[3] = {Text = "Copy username to Clipboard..", ID = 2};
-		Menu[4] = {Text = "Copy password to Clipboard..", ID = 3};
-		
+		Menu[1] = {Enabled = false, Text = 'Add New Service', ID = 1};
+		if (Row and Row ~= -1) then
+			if ToDelete.Services ~= 'Custom' then
+				Menu[2] = {Text = '---'};
+				Menu[3] = {Enabled = false, Text = 'Remove '..ToDelete.Services, ID = 2};
+				Menu[4] = {Enabled = false, Text = 'Remove Entries for '..ToDelete.Services, ID = 3};
+			end
+		end
 		local nRes = Application.ShowPopupMenu(Position.X, Position.Y, Menu, 0, 0, true, false);
-		
-		if (nRes ~= -1) then
+		 
+		if(nRes ~= -1)then
 			if (nRes == 1) then
-				local ToDelete = {}; 
-				ToDelete.ID = ListIcon.GetCellText(ObjectName, Row, 3);
-				ToDelete.Services = ListIcon.GetCellText(ObjectName, Row, 0);
-				ToDelete.Username = ListIcon.GetCellText(ObjectName, Row, 1);
+				Dialog.Message(HP.Title, 'Coming Soon, like one said.', MB_OK, MB_ICONNONE);
+			end
+		end
+	end
+	if HPMode == 'Show' then
+		if (Row and Row ~= -1) then
+			local Position, Menu = System.GetMousePosition(false), {};
+			Menu[1] = {Enabled = false, Text = ToDelete.Menu, ID = 1};
+			Menu[2] = {Text = "---"};
+			Menu[3] = {Text = "Copy username to Clipboard..", ID = 2};
+			Menu[4] = {Text = "Copy password to Clipboard..", ID = 3};
+			Menu[5] = {Text = "Delete "..ToDelete.Menu, ID = 4};
+			Menu[6] = {Enabled = false, Text = "Update "..ToDelete.Menu, ID = 5};
 			
-				local MessageDelete =[[Are you sure you want to delete the following?
-	Username: ]]..ToDelete.Username..[[,
-	Service: ]]..ToDelete.Services..[[,
-	#(]]..ToDelete.ID..[[)]];
-		
-				local DeleteMe = Dialog.Message("Delete", MessageDelete, MB_OKCANCEL, MB_ICONNONE, MB_DEFBUTTON2);
+			local nRes = Application.ShowPopupMenu(Position.X, Position.Y, Menu, 0, 0, true, false);
 			
-				if DeleteMe == IDOK then
-					HP:DropServices(tonumber(ToDelete.ID));
-					HP:PullServices();
-				end
-			elseif (nRes == 2) then
-				Clipboard.CopyText(ListIcon.GetCellText(ObjectName, Row, 1));
-				
-				if (Application.GetLastError() ~= 0) then
-					return Dialog.Message("Error", "Failed to copy username to Clipboard.\r\n\r\n".._tblErrorMessages[Application.GetLastError()], 0, 16, 0);
-				else
-					return Dialog.Message("Success", "Successfully copied username to Clipboard!", 0, 64, 0);
-				end
-			elseif (nRes == 3) then
-				Clipboard.CopyText(ListIcon.GetCellText(ObjectName, Row, 2));
-				
-				if (Application.GetLastError() ~= 0) then
-					return Dialog.Message("Error", "Failed to copy password to Clipboard.\r\n\r\n".._tblErrorMessages[Application.GetLastError()], 0, 16, 0);
-				else
-					return Dialog.Message("Success", "Successfully copied password to Clipboard!", 0, 64, 0);
+			if (nRes ~= -1) then
+				if (nRes == 1) then
+				elseif (nRes == 2) then
+					Clipboard.CopyText(ListIcon.GetCellText(ObjectName, Row, 1));
+					if (Application.GetLastError() ~= 0) then
+						return Dialog.Message("Error", "Failed to copy username to Clipboard.\r\n\r\n".._tblErrorMessages[Application.GetLastError()], 0, 16, 0);
+					else
+						return Dialog.Message("Success", "Successfully copied username to Clipboard!", 0, 64, 0);
+					end
+				elseif (nRes == 3) then
+					Clipboard.CopyText(ListIcon.GetCellText(ObjectName, Row, 2));
+					if (Application.GetLastError() ~= 0) then
+						return Dialog.Message("Error", "Failed to copy password to Clipboard.\r\n\r\n".._tblErrorMessages[Application.GetLastError()], 0, 16, 0);
+					else
+						return Dialog.Message("Success", "Successfully copied password to Clipboard!", 0, 64, 0);
+					end
+				elseif (nRes == 4) then
+					local ToDelete = {}; 
+					ToDelete.ID = ListIcon.GetCellText(ObjectName, Row, 3);
+					ToDelete.Services = ListIcon.GetCellText(ObjectName, Row, 0);
+					ToDelete.Username = ListIcon.GetCellText(ObjectName, Row, 1);
+					ToDelete.Menu = ToDelete.Services..' ('..ToDelete.Username..')';
+					local MessageDelete =[[Are you sure you want to delete the following?
+					Entry: #]]..ToDelete.ID..[[,				
+					Username: ]]..ToDelete.Username..[[,
+					Service: ]]..ToDelete.Services..[[.]];
+					local DeleteMe = Dialog.Message("Delete", MessageDelete, MB_OKCANCEL, MB_ICONNONE, MB_DEFBUTTON2);	
+					if DeleteMe == IDOK then
+						HP:DropServices(tonumber(ToDelete.ID));
+						HP:PullServices();
+					end
 				end
 			end
 		end
@@ -283,11 +444,16 @@ function ListIconEvent.OnRightClick(ObjectName, Row)
 end
 
 function ListIconEvent.OnSelect(ObjectName, Row)
-	if HPMode == "Show" then
+	if HPMode == "Add" then
+		ToDelete = {}; 
+		ToDelete.ID = ListIcon.GetCellText(ObjectName, Row, 3);
+		ToDelete.Services = ListIcon.GetCellText(ObjectName, Row, 0);
+	elseif HPMode == "Show" then
 		ToDelete = {}; 
 		ToDelete.ID = ListIcon.GetCellText(ObjectName, Row, 3);
 		ToDelete.Services = ListIcon.GetCellText(ObjectName, Row, 0);
 		ToDelete.Username = ListIcon.GetCellText(ObjectName, Row, 1);
+		ToDelete.Menu = ToDelete.Services..' ('..ToDelete.Username..')';
 	end
 end
 
@@ -302,13 +468,11 @@ end
 function ListIconEvent.OnKey(ObjectName, e_Key)
 	if HPMode == "Show" then
 		if e_Key == 46 then
-			MessageDelete =[[Are you sure you want to delete the following?
+MessageDelete =[[Are you sure you want to delete the following?
 Username: ]]..ToDelete.Username..[[,
 Service: ]]..ToDelete.Services..[[,
 #(]]..ToDelete.ID..[[)]];
-	
 			DeleteMe = Dialog.Message("Delete", MessageDelete, MB_OKCANCEL, MB_ICONNONE, MB_DEFBUTTON2);
-		
 			if DeleteMe == IDOK then
 				HP:DropServices(tonumber(ToDelete.ID));
 				HP:PullServices();
@@ -342,6 +506,14 @@ end
 function ListIconEvent.OnHeaderRightClick(ObjectName, Column)
 
 end
+
+function ListIconEvent.OnColorRequest(Object, Row, Column)
+
+end
+function ListIconEvent.OnFontRequest(Object, Row, Column)
+
+end
+
 -- character table string
 local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -375,24 +547,52 @@ function dec(data)
     end))
 end
 
--- command line if not called as library
-if (arg ~= nil) then
-	local func = 'enc'
-	for n,v in ipairs(arg) do
-		if (n &gt; 0) then
-			if (v == "-h") then print "base64.lua [-e] [-d] text/data" break
-			elseif (v == "-e") then func = 'enc'
-			elseif (v == "-d") then func = 'dec'
-			else print(_G[func](v)) end
-		end
+
+
+function HP:About(s_about)
+	if s_about == 'r' then
+		dTitle = 'Rexzooly Kai Black';
+		dMSG = 'Rexzooly Kai Black, well who am I? I am a hobbiest programmer with many health problems, I try my best to program useful software and help others out. I have created many programs/app in AMS and I have provided many source code for these apps, what to know more about them then click yes below to view my GitHub Page\r\n\r\nView GitHub?';
+		dURL = 'https://github.com/rexzooly';
 	end
-else
-	--module('base64',package.seeall)
+	if s_about == 'a' then
+		dTitle =  'AutoPlay Media Studios';
+		dMSG = 'AuptoPlay Media Studios, this software was created by Indigorose to create Autoplay Menus, the ones we see in many games or other software but it grow from there as AMS included the LUA Scripting engine this meant programmers alike could make AMS do much more powerful things.\r\n\r\nFind out more about AMS and IR please visit there website, Indigorose.com, would you like to visit there site now?';
+		dURL = 'http://www.indigorose.com/';
+	end
+	
+	if s_about == 'h' then
+		dTitle = 'Hush Puppy';
+		dMSG = [[
+Well Hush Puppy started out life as a tool for myself my memory is bad so I
+wanted a simple tool to remember my login details for websites, since I had
+a locked down computer I didn't see the need to lock down the app, once I had
+what I needed with the software I thought why not release it to other AMS 
+users via GitHub sadly having no means to stop other programs from reading 
+the database for the app people was really upset with this, this was changed 
+but people was nothappy with this ever when the app was open source they
+could add there own encryption type, the few that did like it helped out and 
+thanks to agreat plugin by Imagine-programming.com and Shadiku a kid that 
+knows more then Hush Puppy got a new UI with a great looking ListIcon, this 
+still was not enough people wanted a pin or password to protect there, Hush 
+Puppys UI has gone but the options still remain, I have now changed this 
+software in to a Framework if you will to do what you want with so you can 
+learn SQLite3, you can see how ListIcon works and the basics of AMS.
+		
+Would you like to view Imagine-programming.com to download and view his great plugins for AMS that made Hush Puppy possible?]];
+		dURL = 'http://www.imagine-programming.com/';
+	end
+	
+	dRecall = Dialog.Message(dTitle, dMSG, MB_YESNO, MB_ICONNONE, MB_DEFBUTTON2);
+	
+	if dRecall == IDYES then
+		File.OpenURL(dURL, SW_SHOWNORMAL);
+	end
 end</Script>
 <BookMarks count="0">
 </BookMarks>
-<DesignCodeLine>204</DesignCodeLine>
-<DesignCodeCol>67</DesignCodeCol>
+<DesignCodeLine>502</DesignCodeLine>
+<DesignCodeCol>40</DesignCodeCol>
 </Globals>
 <Defaults>
 <StartupPage>_PageFirst</StartupPage>
@@ -437,9 +637,9 @@ end</Script>
 <Arguments/>
 </CodeSigning>
 <RuntimeSkin>
-<UseSkinFile>0</UseSkinFile>
-<SkinFilename>AutoPlay\Plugins\32.msstyles</SkinFilename>
-<SkinSubStyle>NormalFuture</SkinSubStyle>
+<UseSkinFile>1</UseSkinFile>
+<SkinFilename>AutoPlay\Plugins\Codejock.cjstyles</SkinFilename>
+<SkinSubStyle>NormalBlack</SkinSubStyle>
 </RuntimeSkin>
 <Databases>
 <MySQL>0</MySQL>
@@ -493,20 +693,73 @@ end</Script>
 <Event>
 <Name>On Menu</Name>
 <Args>number e_ID, table e_ItemInfo</Args>
-<Script/>
+<Script>-- File Menu
+	
+	---- Options/Settings
+	if e_ID == 101 then
+		DialogEx.Show("Options")
+	end
+	
+	---- Close Software From Menu
+	if e_ID == 102 then
+		Application.Exit(0);
+	end
+	
+-- Add Menu
+
+	---- New Entry
+	if e_ID == 201 then
+		HP:Add();
+	end
+	
+	---- New Servcie
+	if e_ID == 202 then
+		IconUpdated = DialogEx.Show("Servcie", true);
+		if IconUpdated == 9 then
+			HP:Clear()
+			HP:BuildIconCashe();
+			HP:PullServices();
+		end
+	end
+	
+-- View Menu
+
+	---- View Entries
+	if e_ID == 301 then
+		HP:PullServices();
+	end
+	---- View Services
+	if e_ID == 302 then
+		HP:Add();
+	end
+	
+-- About
+
+	---- About Rexzooly
+	if e_ID == 401 then
+		HP:About('r')
+	end
+	---- About AMS
+	if e_ID == 402 then
+		HP:About('a')
+	end
+	---- About HP
+	if e_ID == 403 then
+		HP:About('h')
+	end</Script>
 <TreeStates>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
+<DesignCodeLine>4</DesignCodeLine>
+<DesignCodeCol>15</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
 <EXEResourceInfo>
 <ReplaceIcon>1</ReplaceIcon>
-<IconFilename>AutoPlay\Icons\HushPuppyIcon.ico</IconFilename>
+<IconFilename>AutoPlay\Icons\1385269262_20762.ico</IconFilename>
 <ReplaceVersionInfo>1</ReplaceVersionInfo>
 <FileVer1>0</FileVer1>
 <FileVer2>0</FileVer2>
@@ -528,18 +781,18 @@ end</Script>
 <HGuidelines/>
 <VGuidelines/>
 <MenuBar>
-<Enabled>0</Enabled>
+<Enabled>1</Enabled>
 <UseIcons>0</UseIcons>
 <BitmapIconFile/>
 <TransColor format="hex">ffffff</TransColor>
 <MenuItem>
-<Text>Main Menu &amp;1</Text>
+<Text>&amp;File</Text>
 <ID>100</ID>
 <Enabled>1</Enabled>
 <Checked>0</Checked>
 <SubMenu>
 <MenuItem>
-<Text>Sub Menu &amp;1</Text>
+<Text>&amp;Options</Text>
 <ID>101</ID>
 <Enabled>1</Enabled>
 <Checked>0</Checked>
@@ -547,7 +800,15 @@ end</Script>
 <IconID>-1</IconID>
 </MenuItem>
 <MenuItem>
-<Text>Sub Menu &amp;2</Text>
+<Text>---</Text>
+<ID>0</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu/>
+<IconID>-1</IconID>
+</MenuItem>
+<MenuItem>
+<Text>E&amp;xit</Text>
 <ID>102</ID>
 <Enabled>1</Enabled>
 <Checked>0</Checked>
@@ -558,13 +819,13 @@ end</Script>
 <IconID>-1</IconID>
 </MenuItem>
 <MenuItem>
-<Text>Main Menu &amp;2</Text>
+<Text>A&amp;dd</Text>
 <ID>200</ID>
 <Enabled>1</Enabled>
 <Checked>0</Checked>
 <SubMenu>
 <MenuItem>
-<Text>Sub Menu &amp;1</Text>
+<Text>New Entry</Text>
 <ID>201</ID>
 <Enabled>1</Enabled>
 <Checked>0</Checked>
@@ -572,8 +833,66 @@ end</Script>
 <IconID>-1</IconID>
 </MenuItem>
 <MenuItem>
-<Text>Sub Menu &amp;2</Text>
+<Text>New Servcie</Text>
 <ID>202</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu/>
+<IconID>-1</IconID>
+</MenuItem>
+</SubMenu>
+<IconID>-1</IconID>
+</MenuItem>
+<MenuItem>
+<Text>&amp;View</Text>
+<ID>300</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu>
+<MenuItem>
+<Text>View Entries</Text>
+<ID>301</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu/>
+<IconID>-1</IconID>
+</MenuItem>
+<MenuItem>
+<Text>View Servcies</Text>
+<ID>302</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu/>
+<IconID>-1</IconID>
+</MenuItem>
+</SubMenu>
+<IconID>-1</IconID>
+</MenuItem>
+<MenuItem>
+<Text>&amp;About</Text>
+<ID>400</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu>
+<MenuItem>
+<Text>About &amp;Rexzooly</Text>
+<ID>401</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu/>
+<IconID>-1</IconID>
+</MenuItem>
+<MenuItem>
+<Text>About &amp;AutoPlay Media Studio</Text>
+<ID>402</ID>
+<Enabled>1</Enabled>
+<Checked>0</Checked>
+<SubMenu/>
+<IconID>-1</IconID>
+</MenuItem>
+<MenuItem>
+<Text>About &amp;HushPuppy Framework</Text>
+<ID>403</ID>
 <Enabled>1</Enabled>
 <Checked>0</Checked>
 <SubMenu/>
@@ -592,27 +911,27 @@ end</Script>
 <Keywords/>
 <Background>
 <Type>2</Type>
-<ImageStyle>2</ImageStyle>
+<ImageStyle>1</ImageStyle>
 <TopColor>16711680</TopColor>
 <BottomColor>16777215</BottomColor>
-<UseCustomBackgroundSettings>1</UseCustomBackgroundSettings>
+<UseCustomBackgroundSettings>0</UseCustomBackgroundSettings>
 <TransitionEffect/>
 <TransProps/>
 <NormalImage>
-<Filename>AutoPlay\Images\Style_Image.png</Filename>
+<Filename>AutoPlay\Images\body-bg-11.png</Filename>
 </NormalImage>
 </Background>
 <Event>
 <Name>On Preload</Name>
 <Args/>
-<Script/>
+<Script>HP:Create(true);</Script>
 <TreeStates>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
 <DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
+<DesignCodeCol>14</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -631,15 +950,14 @@ ListIcon.AddColumn("ListBox1", "Email or Username", 200);
 ListIcon.AddColumn("ListBox1", "Auth or Password", 180);
 ListIcon.AddColumn("ListBox1", "#", 40);
 ListIcon.ClearRows("ListBox1"); 
-HP:Create();
 HP:PullServices();</Script>
 <TreeStates>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>13</DesignCodeLine>
-<DesignCodeCol>18</DesignCodeCol>
+<DesignCodeLine>11</DesignCodeLine>
+<DesignCodeCol>32</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -782,10 +1100,10 @@ HP:PullServices();</Script>
 <MaintainAspectRatio>0</MaintainAspectRatio>
 <Pin>0</Pin>
 <TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
+<AutoResize>12</AutoResize>
 <Coordinates>
-<Top>61</Top>
-<Bottom>225</Bottom>
+<Top>35</Top>
+<Bottom>250</Bottom>
 <Left>0</Left>
 <Right>630</Right>
 </Coordinates>
@@ -816,7 +1134,7 @@ HP:PullServices();</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>3158064</DesignCodeLine>
+<DesignCodeLine>0</DesignCodeLine>
 <DesignCodeCol>0</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
@@ -831,7 +1149,7 @@ HP:PullServices();</Script>
 <TreeState>0</TreeState>
 </TreeStates>
 <DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>1081468928</DesignCodeCol>
+<DesignCodeCol>0</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -859,7 +1177,7 @@ HP:PullServices();</Script>
 <TreeState>0</TreeState>
 </TreeStates>
 <DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>25</DesignCodeCol>
+<DesignCodeCol>0</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -890,24 +1208,24 @@ HP:PullServices();</Script>
 <ListBoxItems/>
 </Object>
 <Object>
-<Type>8</Type>
-<Name>h_exit</Name>
+<Type>3</Type>
+<Name>Image1</Name>
 <VisibleAtDesignTime>1</VisibleAtDesignTime>
 <VisibleAtRunTime>1</VisibleAtRunTime>
 <Locked>0</Locked>
 <Enabled>1</Enabled>
-<ToolTip>Close Hush Puppy</ToolTip>
+<ToolTip>Add New Entry</ToolTip>
 <Cursor>1</Cursor>
 <Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
+<MaintainAspectRatio>1</MaintainAspectRatio>
 <Pin>0</Pin>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>0</Top>
-<Bottom>17</Bottom>
-<Left>616</Left>
-<Right>630</Right>
+<Top>5</Top>
+<Bottom>29</Bottom>
+<Left>42</Left>
+<Right>66</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -916,14 +1234,14 @@ HP:PullServices();</Script>
 <Event>
 <Name>On Click</Name>
 <Args/>
-<Script>Application.Exit();</Script>
+<Script>HP:Add()</Script>
 <TreeStates>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
 <DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>19</DesignCodeCol>
+<DesignCodeCol>0</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -970,116 +1288,38 @@ HP:PullServices();</Script>
 </BookMarks>
 </Event>
 <Actions/>
+<NormalImage>
+<Filename>AutoPlay\Images\1385273634_layer_to_preview_add.png</Filename>
+<UseTransColor>0</UseTransColor>
+<TransClr>16777215</TransClr>
+<TransTolerance>10</TransTolerance>
+<Opacity>100</Opacity>
+<HTMode>0</HTMode>
+</NormalImage>
+<MouseOverSndMode>0</MouseOverSndMode>
 <MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
+<MouseClickSndMode>0</MouseClickSndMode>
 <MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
 </Object>
 <Object>
-<Type>8</Type>
-<Name>h_minimize</Name>
+<Type>3</Type>
+<Name>Image2</Name>
 <VisibleAtDesignTime>1</VisibleAtDesignTime>
 <VisibleAtRunTime>1</VisibleAtRunTime>
 <Locked>0</Locked>
 <Enabled>1</Enabled>
-<ToolTip>Minimize Hush Puppy</ToolTip>
+<ToolTip>Show/Refresh</ToolTip>
 <Cursor>1</Cursor>
 <Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
+<MaintainAspectRatio>1</MaintainAspectRatio>
 <Pin>0</Pin>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>0</Top>
-<Bottom>17</Bottom>
-<Left>600</Left>
-<Right>614</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script>Window.Minimize(Application.GetWndHandle())</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>7</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
-<Object>
-<Type>8</Type>
-<Name>h_show</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Show your login details</ToolTip>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>43</Top>
-<Bottom>57</Bottom>
-<Left>12</Left>
-<Right>57</Right>
+<Top>5</Top>
+<Bottom>29</Bottom>
+<Left>8</Left>
+<Right>32</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -1142,100 +1382,22 @@ HP:PullServices();</Script>
 </BookMarks>
 </Event>
 <Actions/>
+<NormalImage>
+<Filename>AutoPlay\Images\1385273737_show.png</Filename>
+<UseTransColor>0</UseTransColor>
+<TransClr>16777215</TransClr>
+<TransTolerance>10</TransTolerance>
+<Opacity>100</Opacity>
+<HTMode>0</HTMode>
+</NormalImage>
+<MouseOverSndMode>0</MouseOverSndMode>
 <MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
+<MouseClickSndMode>0</MouseClickSndMode>
 <MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
 </Object>
 <Object>
-<Type>8</Type>
-<Name>h_add</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Add new set of login details</ToolTip>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>43</Top>
-<Bottom>57</Bottom>
-<Left>63</Left>
-<Right>94</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script>HP:Add()</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>8</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
-<Object>
-<Type>8</Type>
-<Name>h_settings</Name>
+<Type>3</Type>
+<Name>Image3</Name>
 <VisibleAtDesignTime>1</VisibleAtDesignTime>
 <VisibleAtRunTime>1</VisibleAtRunTime>
 <Locked>0</Locked>
@@ -1243,15 +1405,15 @@ HP:PullServices();</Script>
 <ToolTip>Settings</ToolTip>
 <Cursor>1</Cursor>
 <Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
+<MaintainAspectRatio>1</MaintainAspectRatio>
 <Pin>0</Pin>
 <TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
+<AutoResize>5</AutoResize>
 <Coordinates>
-<Top>232</Top>
-<Bottom>250</Bottom>
-<Left>22</Left>
-<Right>44</Right>
+<Top>5</Top>
+<Bottom>29</Bottom>
+<Left>600</Left>
+<Right>624</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -1260,7 +1422,7 @@ HP:PullServices();</Script>
 <Event>
 <Name>On Click</Name>
 <Args/>
-<Script>IconUpdated = DialogEx.Show("Settings", true);
+<Script>IconUpdated = DialogEx.Show("Servcie", true);
 
 if IconUpdated == 9 then
 	HP:Clear()
@@ -1272,8 +1434,8 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>3</DesignCodeLine>
-<DesignCodeCol>4</DesignCodeCol>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -1320,461 +1482,24 @@ end</Script>
 </BookMarks>
 </Event>
 <Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
-<Object>
-<Type>8</Type>
-<Name>a_about</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>About</ToolTip>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>226</Top>
-<Bottom>245</Bottom>
-<Left>574</Left>
-<Right>630</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script>DialogEx.Show("About", true)</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>8</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
-<HGuidelines/>
-<VGuidelines/>
-</Page>
-<Page>
-<Name>HP_About</Name>
-<InheritObs/>
-<InheritBG/>
-<Description/>
-<Keywords/>
-<Background>
-<Type>2</Type>
-<ImageStyle>0</ImageStyle>
-<TopColor>16711680</TopColor>
-<BottomColor>16777215</BottomColor>
-<UseCustomBackgroundSettings>1</UseCustomBackgroundSettings>
-<TransitionEffect/>
-<TransProps/>
 <NormalImage>
-<Filename>AutoPlay\Images\About_Image.png</Filename>
+<Filename>AutoPlay\Images\1385273745_tools.png</Filename>
+<UseTransColor>0</UseTransColor>
+<TransClr>16777215</TransClr>
+<TransTolerance>10</TransTolerance>
+<Opacity>100</Opacity>
+<HTMode>0</HTMode>
 </NormalImage>
-</Background>
-<Event>
-<Name>On Preload</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>3158064</DesignCodeLine>
-<DesignCodeCol>1094795585</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Show</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>1094795585</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Close</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>1094778921</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Timer</Name>
-<Args>number e_ID</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Audio</Name>
-<Args>number e_Channel, string e_State</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>2718053</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Size</Name>
-<Args>number e_WindowWidth, number e_WindowHeight, number e_PageWidth, number e_PageHeight, number e_Type</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>29127528</DesignCodeLine>
-<DesignCodeCol>29127592</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Menu</Name>
-<Args>number e_ID, table e_ItemInfo</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Key</Name>
-<Args>number e_Key, table e_Modifiers</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>34098</DesignCodeLine>
-<DesignCodeCol>16</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Mouse Button</Name>
-<Args>number e_Type, number e_X, number e_Y</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>12</DesignCodeLine>
-<DesignCodeCol>4</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Mouse Move</Name>
-<Args>number e_X, number e_Y</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>886</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Mouse Wheel</Name>
-<Args>table e_Flags, number e_Delta, number e_X, number e_Y</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Object>
-<Type>8</Type>
-<Name>Hotspot2</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Click here to be taken to the website.</ToolTip>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>186</Top>
-<Bottom>205</Bottom>
-<Left>426</Left>
-<Right>612</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>1634689648</DesignCodeLine>
-<DesignCodeCol>25714</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>4079394</DesignCodeLine>
-<DesignCodeCol>7274599</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>1701080064</DesignCodeLine>
-<DesignCodeCol>11890</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>1230262853</DesignCodeLine>
-<DesignCodeCol>17747</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions>
-<Action>
-<Type>6</Type>
-<Name>View Website</Name>
-<Exit>0</Exit>
-<Website>http://www.selene-project.co.uk</Website>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-</Action>
-</Actions>
+<MouseOverSndMode>0</MouseOverSndMode>
 <MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
+<MouseClickSndMode>0</MouseClickSndMode>
 <MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
-<Object>
-<Type>8</Type>
-<Name>h_exit</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Close Hush Puppy</ToolTip>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>0</Top>
-<Bottom>17</Bottom>
-<Left>616</Left>
-<Right>630</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script>Application.Exit();</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>19</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
 </Object>
 <HGuidelines/>
 <VGuidelines/>
 </Page>
 <SugDialogs>
-<PageDialog width="480" height="200" dialog_title="Add" dialog_style="2" movable="1" use_custom_icon="0" custom_icon="" always_on_top="0" resizable="0" min_width="480" min_height="200" fit_custom_mask_to_window="1" custom_mask="">
+<PageDialog width="270" height="100" dialog_title="Add" dialog_style="0" movable="1" use_custom_icon="0" custom_icon="" always_on_top="0" resizable="0" min_width="250" min_height="100" fit_custom_mask_to_window="1" custom_mask="">
 <Page>
 <Name>Add</Name>
 <InheritObs/>
@@ -1786,7 +1511,7 @@ end</Script>
 <ImageStyle>2</ImageStyle>
 <TopColor>16711680</TopColor>
 <BottomColor>16777215</BottomColor>
-<UseCustomBackgroundSettings>1</UseCustomBackgroundSettings>
+<UseCustomBackgroundSettings>0</UseCustomBackgroundSettings>
 <TransitionEffect/>
 <TransProps/>
 <NormalImage>
@@ -1837,8 +1562,8 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>15</DesignCodeLine>
-<DesignCodeCol>21</DesignCodeCol>
+<DesignCodeLine>20</DesignCodeLine>
+<DesignCodeCol>32</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -1971,10 +1696,10 @@ Input.SetText("Input3", "");</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>87</Top>
-<Bottom>106</Bottom>
-<Left>184</Left>
-<Right>380</Right>
+<Top>8</Top>
+<Bottom>33</Bottom>
+<Left>5</Left>
+<Right>265</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2041,7 +1766,7 @@ Input.SetText("Input3", "");</Script>
 <RightToLeftReadingOrder>0</RightToLeftReadingOrder>
 </Text>
 <Box>
-<BorderStyle>0</BorderStyle>
+<BorderStyle>1</BorderStyle>
 <VerticalScrollbar>1</VerticalScrollbar>
 <HorizontalScrollbar>0</HorizontalScrollbar>
 <Style>0</Style>
@@ -2067,10 +1792,10 @@ Input.SetText("Input3", "");</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>136</Top>
-<Bottom>155</Bottom>
-<Left>184</Left>
-<Right>380</Right>
+<Top>41</Top>
+<Bottom>67</Bottom>
+<Left>5</Left>
+<Right>265</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2137,7 +1862,7 @@ Input.SetText("Input3", "");</Script>
 <RightToLeftReadingOrder>0</RightToLeftReadingOrder>
 </Text>
 <Box>
-<BorderStyle>0</BorderStyle>
+<BorderStyle>1</BorderStyle>
 <VerticalScrollbar>1</VerticalScrollbar>
 <HorizontalScrollbar>0</HorizontalScrollbar>
 <Style>0</Style>
@@ -2163,10 +1888,10 @@ Input.SetText("Input3", "");</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>168</Top>
-<Bottom>191</Bottom>
-<Left>378</Left>
-<Right>463</Right>
+<Top>71</Top>
+<Bottom>94</Bottom>
+<Left>180</Left>
+<Right>265</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2175,9 +1900,9 @@ Input.SetText("Input3", "");</Script>
 <Event>
 <Name>On Click</Name>
 <Args/>
-<Script>if Label.GetText("Service_Label") ~= '' and Input.GetText("Input2") ~= '' and Input.GetText("Input3") ~= '' then
-	HP:AddServices("", Label.GetText("Service_Label"), Input.GetText("Input2"), Input.GetText("Input3"));
-	DialogEx.Close(4)
+<Script>if ToAdd.Name ~= '' and Input.GetText("Input2") ~= '' and Input.GetText("Input3") ~= '' then
+	HP:AddServices(ToAdd.Name, Input.GetText("Input2"), Input.GetText("Input3"));
+	DialogEx.Close(4);
 else
 	Dialog.Message("Input Error", "Please fill out all the inputs.");
 end</Script>
@@ -2187,7 +1912,7 @@ end</Script>
 <TreeState>0</TreeState>
 </TreeStates>
 <DesignCodeLine>2</DesignCodeLine>
-<DesignCodeCol>10</DesignCodeCol>
+<DesignCodeCol>19</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -2276,92 +2001,6 @@ end</Script>
 </FontData>
 </Object>
 <Object>
-<Type>8</Type>
-<Name>Hotspot1</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip/>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>0</Top>
-<Bottom>21</Bottom>
-<Left>462</Left>
-<Right>480</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script>DialogEx.Close(0)</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>16</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
-<Object>
 <Type>3</Type>
 <Name>Service_Icon</Name>
 <VisibleAtDesignTime>1</VisibleAtDesignTime>
@@ -2376,10 +2015,10 @@ end</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>49</Top>
-<Bottom>65</Bottom>
-<Left>180</Left>
-<Right>196</Right>
+<Top>74</Top>
+<Bottom>90</Bottom>
+<Left>9</Left>
+<Right>25</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2470,10 +2109,10 @@ end</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>58</Top>
-<Bottom>79</Bottom>
-<Left>198</Left>
-<Right>207</Right>
+<Top>72</Top>
+<Bottom>93</Bottom>
+<Left>34</Left>
+<Right>43</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2560,10 +2199,10 @@ end</Script>
 <MouseClickSndMode>0</MouseClickSndMode>
 <MouseClickSound/>
 <OriginalRect>
-<Top>58</Top>
-<Bottom>79</Bottom>
-<Left>198</Left>
-<Right>207</Right>
+<Top>72</Top>
+<Bottom>93</Bottom>
+<Left>34</Left>
+<Right>43</Right>
 </OriginalRect>
 </Text>
 </Object>
@@ -2571,9 +2210,9 @@ end</Script>
 <VGuidelines/>
 </Page>
 </PageDialog>
-<PageDialog width="480" height="300" dialog_title="Settings" dialog_style="2" movable="1" use_custom_icon="0" custom_icon="" always_on_top="0" resizable="0" min_width="480" min_height="300" fit_custom_mask_to_window="1" custom_mask="">
+<PageDialog width="300" height="100" dialog_title="Add New Service" dialog_style="0" movable="1" use_custom_icon="0" custom_icon="" always_on_top="0" resizable="0" min_width="300" min_height="100" fit_custom_mask_to_window="1" custom_mask="">
 <Page>
-<Name>Settings</Name>
+<Name>Servcie</Name>
 <InheritObs/>
 <InheritBG/>
 <Description/>
@@ -2583,7 +2222,7 @@ end</Script>
 <ImageStyle>0</ImageStyle>
 <TopColor>16711680</TopColor>
 <BottomColor>16777215</BottomColor>
-<UseCustomBackgroundSettings>1</UseCustomBackgroundSettings>
+<UseCustomBackgroundSettings>0</UseCustomBackgroundSettings>
 <TransitionEffect/>
 <TransProps/>
 <NormalImage>
@@ -2749,10 +2388,10 @@ Image.Load("Service_Icon", "AutoPlay\\Images\\1303256395_license-key.png");</Scr
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>116</Top>
-<Bottom>132</Bottom>
-<Left>265</Left>
-<Right>281</Right>
+<Top>25</Top>
+<Bottom>41</Bottom>
+<Left>212</Left>
+<Right>228</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2850,10 +2489,10 @@ end</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>227</Top>
-<Bottom>250</Bottom>
-<Left>300</Left>
-<Right>375</Right>
+<Top>46</Top>
+<Bottom>69</Bottom>
+<Left>214</Left>
+<Right>289</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -2981,10 +2620,10 @@ end</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>116</Top>
-<Bottom>135</Bottom>
-<Left>63</Left>
-<Right>259</Right>
+<Top>25</Top>
+<Bottom>44</Bottom>
+<Left>10</Left>
+<Right>206</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -3051,7 +2690,7 @@ end</Script>
 <RightToLeftReadingOrder>0</RightToLeftReadingOrder>
 </Text>
 <Box>
-<BorderStyle>0</BorderStyle>
+<BorderStyle>1</BorderStyle>
 <VerticalScrollbar>1</VerticalScrollbar>
 <HorizontalScrollbar>0</HorizontalScrollbar>
 <Style>0</Style>
@@ -3077,10 +2716,10 @@ end</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>180</Top>
-<Bottom>199</Bottom>
-<Left>63</Left>
-<Right>259</Right>
+<Top>49</Top>
+<Bottom>68</Bottom>
+<Left>10</Left>
+<Right>206</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -3149,7 +2788,7 @@ end</Script>
 <RightToLeftReadingOrder>0</RightToLeftReadingOrder>
 </Text>
 <Box>
-<BorderStyle>0</BorderStyle>
+<BorderStyle>1</BorderStyle>
 <VerticalScrollbar>1</VerticalScrollbar>
 <HorizontalScrollbar>0</HorizontalScrollbar>
 <Style>0</Style>
@@ -3160,113 +2799,27 @@ end</Script>
 <ReadOnly>0</ReadOnly>
 </Box>
 </Object>
-<Object>
-<Type>8</Type>
-<Name>Hotspot1</Name>
-<VisibleAtDesignTime>1</VisibleAtDesignTime>
-<VisibleAtRunTime>1</VisibleAtRunTime>
-<Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Close Settings</ToolTip>
-<Cursor>1</Cursor>
-<Group>0</Group>
-<MaintainAspectRatio>0</MaintainAspectRatio>
-<Pin>0</Pin>
-<TabIndex>-1</TabIndex>
-<AutoResize>0</AutoResize>
-<Coordinates>
-<Top>0</Top>
-<Bottom>21</Bottom>
-<Left>462</Left>
-<Right>480</Right>
-</Coordinates>
-<Ratios>
-<WidthRatio>-1.000000</WidthRatio>
-<HeightRatio>-1.000000</HeightRatio>
-</Ratios>
-<Event>
-<Name>On Click</Name>
-<Args/>
-<Script>DialogEx.Close(0);</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>18</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Enter</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Leave</Name>
-<Args/>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
-</Object>
 <HGuidelines/>
 <VGuidelines/>
 </Page>
 </PageDialog>
-<PageDialog width="630" height="250" dialog_title="About" dialog_style="2" movable="1" use_custom_icon="0" custom_icon="" always_on_top="0" resizable="0" min_width="480" min_height="200" fit_custom_mask_to_window="1" custom_mask="">
+<PageDialog width="330" height="100" dialog_title="Options" dialog_style="0" movable="1" use_custom_icon="0" custom_icon="" always_on_top="0" resizable="0" min_width="330" min_height="100" fit_custom_mask_to_window="1" custom_mask="">
 <Page>
-<Name>About</Name>
+<Name>Options</Name>
 <InheritObs/>
 <InheritBG/>
 <Description/>
 <Keywords/>
 <Background>
-<Type>2</Type>
-<ImageStyle>2</ImageStyle>
+<Type>0</Type>
+<ImageStyle>0</ImageStyle>
 <TopColor>16711680</TopColor>
 <BottomColor>16777215</BottomColor>
-<UseCustomBackgroundSettings>1</UseCustomBackgroundSettings>
+<UseCustomBackgroundSettings>0</UseCustomBackgroundSettings>
 <TransitionEffect/>
 <TransProps/>
 <NormalImage>
-<Filename>AutoPlay\Images\About_Image.png</Filename>
+<Filename/>
 </NormalImage>
 </Background>
 <Event>
@@ -3340,6 +2893,20 @@ end</Script>
 </BookMarks>
 </Event>
 <Event>
+<Name>On Size</Name>
+<Args>number e_WindowWidth, number e_WindowHeight, number e_DialogWidth, number e_DialogHeight, number e_Type</Args>
+<Script/>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Event>
 <Name>On Key</Name>
 <Args>number e_Key, table e_Modifiers</Args>
 <Script/>
@@ -3395,61 +2962,33 @@ end</Script>
 <BookMarks count="0">
 </BookMarks>
 </Event>
-<Event>
-<Name>On Size</Name>
-<Args>number e_WindowWidth, number e_WindowHeight, number e_DialogWidth, number e_DialogHeight, number e_Type</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
 <Object>
-<Type>8</Type>
-<Name>Hotspot1</Name>
+<Type>7</Type>
+<Name>Input1</Name>
 <VisibleAtDesignTime>1</VisibleAtDesignTime>
 <VisibleAtRunTime>1</VisibleAtRunTime>
 <Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Close About</ToolTip>
-<Cursor>1</Cursor>
+<Enabled>0</Enabled>
+<ToolTip/>
+<Cursor>0</Cursor>
 <Group>0</Group>
 <MaintainAspectRatio>0</MaintainAspectRatio>
 <Pin>0</Pin>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>0</Top>
-<Bottom>21</Bottom>
-<Left>612</Left>
-<Right>630</Right>
+<Top>47</Top>
+<Bottom>70</Bottom>
+<Left>27</Left>
+<Right>227</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
 <HeightRatio>-1.000000</HeightRatio>
 </Ratios>
 <Event>
-<Name>On Click</Name>
-<Args/>
-<Script>DialogEx.Close(0)</Script>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>16</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
-<Name>On Right-Click</Name>
-<Args/>
+<Name>On Key</Name>
+<Args>number e_Key, table e_Modifiers</Args>
 <Script/>
 <TreeStates>
 <TreeState>0</TreeState>
@@ -3462,7 +3001,7 @@ end</Script>
 </BookMarks>
 </Event>
 <Event>
-<Name>On Enter</Name>
+<Name>On Focus</Name>
 <Args/>
 <Script/>
 <TreeStates>
@@ -3470,14 +3009,14 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
+<DesignCodeLine>1918988130</DesignCodeLine>
+<DesignCodeCol>67108964</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
 <Event>
-<Name>On Leave</Name>
-<Args/>
+<Name>On Char</Name>
+<Args>number e_Char, table e_Modifiers</Args>
 <Script/>
 <TreeStates>
 <TreeState>0</TreeState>
@@ -3490,19 +3029,43 @@ end</Script>
 </BookMarks>
 </Event>
 <Actions/>
-<MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
-<MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
+<Text>
+<Body>Coming Soon</Body>
+<TextColor>0</TextColor>
+<BackgroundColor>16777215</BackgroundColor>
+<FontData>
+<FontName>Segoe UI</FontName>
+<CharacterSet>0</CharacterSet>
+<Height>-12</Height>
+<Weight>400</Weight>
+<Italic>0</Italic>
+<Underline>0</Underline>
+<StrikeOut>0</StrikeOut>
+<AntiAlias>1</AntiAlias>
+</FontData>
+<Alignment>1</Alignment>
+<RightToLeftReadingOrder>0</RightToLeftReadingOrder>
+</Text>
+<Box>
+<BorderStyle>2</BorderStyle>
+<VerticalScrollbar>1</VerticalScrollbar>
+<HorizontalScrollbar>0</HorizontalScrollbar>
+<Style>0</Style>
+<Mode>0</Mode>
+<Mask/>
+<MaskSymbol> </MaskSymbol>
+<MaskRetMode>0</MaskRetMode>
+<ReadOnly>0</ReadOnly>
+</Box>
 </Object>
 <Object>
-<Type>8</Type>
-<Name>Hotspot2</Name>
+<Type>20</Type>
+<Name>AddSIcon</Name>
 <VisibleAtDesignTime>1</VisibleAtDesignTime>
 <VisibleAtRunTime>1</VisibleAtRunTime>
 <Locked>0</Locked>
-<Enabled>1</Enabled>
-<ToolTip>Click here to be taken to the website.</ToolTip>
+<Enabled>0</Enabled>
+<ToolTip>Add your own Service Icon</ToolTip>
 <Cursor>1</Cursor>
 <Group>0</Group>
 <MaintainAspectRatio>0</MaintainAspectRatio>
@@ -3510,10 +3073,141 @@ end</Script>
 <TabIndex>-1</TabIndex>
 <AutoResize>0</AutoResize>
 <Coordinates>
-<Top>186</Top>
-<Bottom>205</Bottom>
-<Left>426</Left>
-<Right>612</Right>
+<Top>47</Top>
+<Bottom>70</Bottom>
+<Left>234</Left>
+<Right>309</Right>
+</Coordinates>
+<Ratios>
+<WidthRatio>-1.000000</WidthRatio>
+<HeightRatio>-1.000000</HeightRatio>
+</Ratios>
+<Event>
+<Name>On Click</Name>
+<Args/>
+<Script>if Input.GetText("Input2") == "Enter your Service name here" then
+	Dialog.Message("Hush Puppy", "You must enter a Service name");
+else
+	IsMe = HP:AddIcon(Input.GetText("Input2"), SerIco);
+	if IsMe == false then
+		Dialog.Message("Hush Puppy", "Sorry this Service("..Input.GetText("Input2")..") already as a Icon.");
+	else
+		DialogEx.Close(9);
+	end
+end</Script>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>3</DesignCodeLine>
+<DesignCodeCol>41</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Event>
+<Name>On Right-Click</Name>
+<Args/>
+<Script/>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Event>
+<Name>On Enter</Name>
+<Args/>
+<Script/>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Event>
+<Name>On Leave</Name>
+<Args/>
+<Script/>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Event>
+<Name>On Hyperlink</Name>
+<Args>string e_Hyperlink</Args>
+<Script/>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Actions/>
+<Options>
+<Text>Change</Text>
+<TextColor format="hex">000000</TextColor>
+<EnableMarkup>0</EnableMarkup>
+<ButtonImage/>
+<TextAlignment>2</TextAlignment>
+<ImageAlignment>0</ImageAlignment>
+<ImageTextRelation>3</ImageTextRelation>
+<Theme>0</Theme>
+<Style>0</Style>
+<State>0</State>
+<MouseOverSoundMode>0</MouseOverSoundMode>
+<MouseOverSound/>
+<MouseClickSoundMode>0</MouseClickSoundMode>
+<MouseClickSound/>
+</Options>
+<FontData>
+<FontName>Segoe UI</FontName>
+<CharacterSet>0</CharacterSet>
+<Height>-12</Height>
+<Weight>400</Weight>
+<Italic>0</Italic>
+<Underline>0</Underline>
+<StrikeOut>0</StrikeOut>
+<AntiAlias>1</AntiAlias>
+</FontData>
+</Object>
+<Object>
+<Type>1</Type>
+<Name>Label1</Name>
+<VisibleAtDesignTime>1</VisibleAtDesignTime>
+<VisibleAtRunTime>1</VisibleAtRunTime>
+<Locked>0</Locked>
+<Enabled>1</Enabled>
+<ToolTip/>
+<Cursor>0</Cursor>
+<Group>0</Group>
+<MaintainAspectRatio>1</MaintainAspectRatio>
+<Pin>0</Pin>
+<TabIndex>-1</TabIndex>
+<AutoResize>0</AutoResize>
+<Coordinates>
+<Top>25</Top>
+<Bottom>44</Bottom>
+<Left>12</Left>
+<Right>113</Right>
 </Coordinates>
 <Ratios>
 <WidthRatio>-1.000000</WidthRatio>
@@ -3528,8 +3222,8 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>1634689648</DesignCodeLine>
-<DesignCodeCol>25714</DesignCodeCol>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>1079418880</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -3542,8 +3236,8 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>4079394</DesignCodeLine>
-<DesignCodeCol>7274599</DesignCodeCol>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>1079418880</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -3556,8 +3250,8 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>1701080064</DesignCodeLine>
-<DesignCodeCol>11890</DesignCodeCol>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>1079418880</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -3570,28 +3264,42 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>1230262853</DesignCodeLine>
-<DesignCodeCol>17747</DesignCodeCol>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>1078509568</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
-<Actions>
-<Action>
-<Type>6</Type>
-<Name>View Website</Name>
-<Exit>0</Exit>
-<Website>http://www.selene-project.co.uk</Website>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-</Action>
-</Actions>
+<Actions/>
+<Text>
+<Body>Change Password:</Body>
+<NormalColor>4278190080</NormalColor>
+<HighlightColor>4278190080</HighlightColor>
+<MouseDownColor>4278190080</MouseDownColor>
+<DisabledColor>12632256</DisabledColor>
+<FontData>
+<FontName>Segoe UI</FontName>
+<CharacterSet>0</CharacterSet>
+<Height>-11</Height>
+<Weight>400</Weight>
+<Italic>0</Italic>
+<Underline>0</Underline>
+<StrikeOut>0</StrikeOut>
+<AntiAlias>1</AntiAlias>
+</FontData>
+<Alignment>0</Alignment>
+<Orientation>0</Orientation>
+<AutoSize>1</AutoSize>
+<MouseOverSndMode>0</MouseOverSndMode>
 <MouseOverSound/>
-<MouseOverSoundMode>0</MouseOverSoundMode>
+<MouseClickSndMode>0</MouseClickSndMode>
 <MouseClickSound/>
-<MouseClickSoundMode>0</MouseClickSoundMode>
+<OriginalRect>
+<Top>25</Top>
+<Bottom>44</Bottom>
+<Left>12</Left>
+<Right>113</Right>
+</OriginalRect>
+</Text>
 </Object>
 <HGuidelines/>
 <VGuidelines/>
