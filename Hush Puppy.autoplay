@@ -613,12 +613,24 @@ end</Script>
 <Plugin>ListIcon\ListIcon.lmd</Plugin>
 </ActionPlugins>
 <TemplateInfo>
-<Name/>
+<Name>Hush Puppy Framework</Name>
 <Author/>
 <Contact/>
 <Web/>
 <Copyright>Copyright © 2011</Copyright>
-<Desc/>
+<Desc>This framework uses ListIcon 2.2.0.0, this framework is here for you to learn SQLite3 and ListIcon very basics, it is a start for many different database driven programs.
+
+Big thanks to Shadiku.com for there help on how to use ListIcon.
+
+I would advice people to build the source use it and slowly learn what each section of the program does, learn AMS's basic functions before trying to understand this software.
+
+ListIcon Action Plugin(
+    Created by Imagine Programming
+    http://www.imagine-programming.com/
+    Copyright © 2010 Imagine Programming (And LuaDevils)
+)
+
+Enjoy, remeber to credit people for there work.</Desc>
 <Categories>General</Categories>
 <Picture/>
 </TemplateInfo>
