@@ -31,7 +31,7 @@ Enjoy, remeber to credit people for there work.</Comments>
 <WindowStyles>
 <Width>630</Width>
 <Height>250</Height>
-<WindowTitle>Hush Puppy Version 0.3</WindowTitle>
+<WindowTitle>Hush Puppy Version 0.4</WindowTitle>
 <WindowStyle>0</WindowStyle>
 <FillColor>0</FillColor>
 </WindowStyles>
@@ -76,7 +76,7 @@ Enjoy, remeber to credit people for there work.</Comments>
 </AudioBGMusic>
 <Globals>
 <Script>--[[
-	Welcome to Hush Puppy Framework 0.3
+	Welcome to Hush Puppy Framework 0.4
 	Author Rexzooly Kai Black
 	
 	This Framework users ListIcon 2.2.0.0
@@ -93,22 +93,15 @@ Enjoy, remeber to credit people for there work.</Comments>
 	Please use this source to learn, if you do just take it and rebrand it please give
 	full credit to myself and all other users like I have already.
 ]]--
-
-
 HP = {
 		-- Edit this below to what ever you would like the title to be EG: Title = 'My Software 01';
-		Title = 'Hush Puppy (0.3) By Rexzooly Kai Black', 
+		Title = 'Hush Puppy (0.4) By Rexzooly Kai Black', 
 		-- This is the name of the database file you can name this anything EG: db.msc
 		DatabaseName = 'core.sys'
 	};
-
-
 -- Since we have already set this in the main setup section we don't need to edit this path.
 -- WARNING EDIT ONLY IF YOU KNOW WHAT YOUR DOING
 HP.Root = Shell.GetFolder(SHF_MYDOCUMENTS).."\\"..HP.DatabaseName;
-
-
-
 -- These two functions are needed to ecode and decode the details within the database but you can create your own if you like, this was made just for basic encoding
 -- #1
 function HP:Encode(s_string)
@@ -125,10 +118,7 @@ function HP:Decode(s_string)
 	CleanString = Crypto.BlowfishDecryptString(LockedString, HPTool.Host..HPTool.User);
 	return CleanString;
 end
-
-
-
--- This function creats the database, requests the user password and sets up the app to be read to work, 
+-- This function creats the database, requests the user password and sets up the app to be ready to work, 
 -- WARNING EDIT ONLY IF YOU KNOW WHAT YOUR DOING
 function HP:Create(b_locked)
 	Window.SetText(Application.GetWndHandle(), HP.Title);
@@ -188,7 +178,6 @@ function HP:Create(b_locked)
 		end
 	end
 end
-
 -- This function will drop a given Entry
 function HP:DropEntry(s_id)
 	SQLite3DropConnection, err = SQLite3:connect(HP.Root);
@@ -202,7 +191,7 @@ function HP:DropEntry(s_id)
 	end
 	SQLite3DropConnection:close();
 end
-
+-- This function will create the user for the software
 function HP:SetUser(Mode, Auth)
 	SQLite3SetUserConnection, err = SQLite3:connect(HP.Root);
 	if not SQLite3SetUserConnection and err then
@@ -216,6 +205,18 @@ function HP:SetUser(Mode, Auth)
 	SQLite3SetUserConnection:close();
 end
 
+function HP:UpdateUser(Auth)
+	SQLite3SetUserConnection, err = SQLite3:connect(HP.Root);
+	if not SQLite3SetUserConnection and err then
+		Dialog.Message(HP.Title.." Error", err);
+	else
+		returns, err = SQLite3SetUserConnection:execute(string.format("UPDATE settings SET auth = '%s'", HP:Encode(Auth)));
+		if err then
+			Dialog.Message(HP.Title, err);
+		end
+	end
+	SQLite3SetUserConnection:close();
+end
 function HP:DeleteUser()
 	SQLite3UserConnection, err = SQLite3:connect(HP.Root);
 	if not SQLite3Connection and err then
@@ -563,23 +564,7 @@ function HP:About(s_about)
 	
 	if s_about == 'h' then
 		dTitle = 'Hush Puppy';
-		dMSG = [[
-Well Hush Puppy started out life as a tool for myself my memory is bad so I
-wanted a simple tool to remember my login details for websites, since I had
-a locked down computer I didn't see the need to lock down the app, once I had
-what I needed with the software I thought why not release it to other AMS 
-users via GitHub sadly having no means to stop other programs from reading 
-the database for the app people was really upset with this, this was changed 
-but people was nothappy with this ever when the app was open source they
-could add there own encryption type, the few that did like it helped out and 
-thanks to agreat plugin by Imagine-programming.com and Shadiku a kid that 
-knows more then Hush Puppy got a new UI with a great looking ListIcon, this 
-still was not enough people wanted a pin or password to protect there, Hush 
-Puppys UI has gone but the options still remain, I have now changed this 
-software in to a Framework if you will to do what you want with so you can 
-learn SQLite3, you can see how ListIcon works and the basics of AMS.
-		
-Would you like to view Imagine-programming.com to download and view his great plugins for AMS that made Hush Puppy possible?]];
+		dMSG = [[Coming Soon]];
 		dURL = 'http://www.imagine-programming.com/';
 	end
 	
@@ -591,8 +576,8 @@ Would you like to view Imagine-programming.com to download and view his great pl
 end</Script>
 <BookMarks count="0">
 </BookMarks>
-<DesignCodeLine>502</DesignCodeLine>
-<DesignCodeCol>40</DesignCodeCol>
+<DesignCodeLine>10</DesignCodeLine>
+<DesignCodeCol>1</DesignCodeCol>
 </Globals>
 <Defaults>
 <StartupPage>_PageFirst</StartupPage>
@@ -776,19 +761,19 @@ Enjoy, remeber to credit people for there work.</Desc>
 <FileVer1>0</FileVer1>
 <FileVer2>0</FileVer2>
 <FileVer3>0</FileVer3>
-<FileVer4>2</FileVer4>
+<FileVer4>4</FileVer4>
 <ProductVer1>0</ProductVer1>
 <ProductVer2>0</ProductVer2>
 <ProductVer3>0</ProductVer3>
-<ProductVer4>2</ProductVer4>
+<ProductVer4>4</ProductVer4>
 <Comments>Created with AutoPlay Media Studio</Comments>
-<Company>Selene-Project</Company>
+<Company>rexzooly.co.uk</Company>
 <FileDescription>Login Details Bank</FileDescription>
 <LegalCopyright>Rexzooly Kai Black</LegalCopyright>
 <LegalTrademarks>Open Source, leading the way for the future</LegalTrademarks>
 <PrivateBuild/>
 <ProductName>Hush Puppy</ProductName>
-<SpecialBuild>Metro Style</SpecialBuild>
+<SpecialBuild/>
 </EXEResourceInfo>
 <HGuidelines/>
 <VGuidelines/>
@@ -889,7 +874,7 @@ Enjoy, remeber to credit people for there work.</Desc>
 <MenuItem>
 <Text>About &amp;Rexzooly</Text>
 <ID>401</ID>
-<Enabled>1</Enabled>
+<Enabled>0</Enabled>
 <Checked>0</Checked>
 <SubMenu/>
 <IconID>-1</IconID>
@@ -897,7 +882,7 @@ Enjoy, remeber to credit people for there work.</Desc>
 <MenuItem>
 <Text>About &amp;AutoPlay Media Studio</Text>
 <ID>402</ID>
-<Enabled>1</Enabled>
+<Enabled>0</Enabled>
 <Checked>0</Checked>
 <SubMenu/>
 <IconID>-1</IconID>
@@ -905,7 +890,7 @@ Enjoy, remeber to credit people for there work.</Desc>
 <MenuItem>
 <Text>About &amp;HushPuppy Framework</Text>
 <ID>403</ID>
-<Enabled>1</Enabled>
+<Enabled>0</Enabled>
 <Checked>0</Checked>
 <SubMenu/>
 <IconID>-1</IconID>
@@ -1446,8 +1431,8 @@ end</Script>
 <TreeState>0</TreeState>
 <TreeState>0</TreeState>
 </TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
+<DesignCodeLine>4</DesignCodeLine>
+<DesignCodeCol>21</DesignCodeCol>
 <BookMarks count="0">
 </BookMarks>
 </Event>
@@ -2905,20 +2890,6 @@ end</Script>
 </BookMarks>
 </Event>
 <Event>
-<Name>On Size</Name>
-<Args>number e_WindowWidth, number e_WindowHeight, number e_DialogWidth, number e_DialogHeight, number e_Type</Args>
-<Script/>
-<TreeStates>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-<TreeState>0</TreeState>
-</TreeStates>
-<DesignCodeLine>0</DesignCodeLine>
-<DesignCodeCol>0</DesignCodeCol>
-<BookMarks count="0">
-</BookMarks>
-</Event>
-<Event>
 <Name>On Key</Name>
 <Args>number e_Key, table e_Modifiers</Args>
 <Script/>
@@ -2963,6 +2934,20 @@ end</Script>
 <Event>
 <Name>On Mouse Wheel</Name>
 <Args>table e_Flags, number e_Delta, number e_X, number e_Y</Args>
+<Script/>
+<TreeStates>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+<TreeState>0</TreeState>
+</TreeStates>
+<DesignCodeLine>0</DesignCodeLine>
+<DesignCodeCol>0</DesignCodeCol>
+<BookMarks count="0">
+</BookMarks>
+</Event>
+<Event>
+<Name>On Size</Name>
+<Args>number e_WindowWidth, number e_WindowHeight, number e_DialogWidth, number e_DialogHeight, number e_Type</Args>
 <Script/>
 <TreeStates>
 <TreeState>0</TreeState>
@@ -3284,9 +3269,9 @@ end</Script>
 <Actions/>
 <Text>
 <Body>Change Password:</Body>
-<NormalColor>4278190080</NormalColor>
-<HighlightColor>4278190080</HighlightColor>
-<MouseDownColor>4278190080</MouseDownColor>
+<NormalColor>2147483647</NormalColor>
+<HighlightColor>2147483647</HighlightColor>
+<MouseDownColor>2147483647</MouseDownColor>
 <DisabledColor>12632256</DisabledColor>
 <FontData>
 <FontName>Segoe UI</FontName>
